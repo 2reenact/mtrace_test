@@ -1,16 +1,23 @@
 import sys
 import pandas as pd
 
+def find(data, arr):
+	for i in arr:
+		if i[0] == data:
+			return arr.index(i)
+	return -1
+
 print(sys.argv)
-dis = dict()
+dis = list()
 
 df = pd.read_csv(sys.argv[1], sep=' ', names=['idx', 'paddr', 'vaddr']);
 
 for i in df['paddr']:
-	if dis.get(i) == None:
-		dis[i] = 0
+	idx = find(i, dis)
+	if idx > -1:
+		dis[idx][1] += 1
 	else:
-		dis[i] = dis[i] + 1
+		dis.append([i, 1])
 
-df = pd.DataFrame([dis])
+df = pd.DataFrame(dis)
 df.to_csv(sys.argv[2], sep=',')
