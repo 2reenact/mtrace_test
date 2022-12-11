@@ -1,8 +1,10 @@
+import sys
 import pandas as pd
 
+print(sys.argv)
 dis = dict()
 
-df = pd.read_csv(r'm3_r_app', sep=' ', names=['idx', 'paddr', 'vaddr']);
+df = pd.read_csv(sys.argv[1], sep=' ', names=['idx', 'paddr', 'vaddr']);
 
 for i in df['paddr']:
 	if dis.get(i) == None:
@@ -11,4 +13,4 @@ for i in df['paddr']:
 		dis[i] = dis[i] + 1
 
 df = pd.DataFrame([dis])
-df.to_csv('dis_m3_r_app.csv', sep=',')
+df.to_csv(sys.argv[2], sep=',')
