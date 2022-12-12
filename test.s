@@ -1,5 +1,8 @@
 	.file	"test.c"
 	.text
+	.comm	j_1,65536,32
+	.comm	j_2,65536,32
+	.comm	j_3,65536,32
 	.globl	init_test
 	.type	init_test, @function
 init_test:
@@ -55,14 +58,6 @@ init_test:
 	.section	.rodata
 .LC0:
 	.string	"pmap -X %d"
-	.align 8
-.LC1:
-	.string	"i = %p\nv1 = %p\ntest[0] = %p\ntest[1] = %p\ntest[2] = %p\n"
-.LC2:
-	.string	"date"
-	.align 8
-.LC3:
-	.string	"i = 0x%lx\nv1 = 0x%lx\ntest[0][%ld] = 0x%lx\ntest[1][%ld] = 0x%lx\ntest[2][%ld] = 0x%lx\n"
 	.text
 	.globl	main
 	.type	main, @function
@@ -75,26 +70,12 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	leaq	-196608(%rsp), %r11
-.LPSRL0:
-	subq	$4096, %rsp
-	orq	$0, (%rsp)
-	cmpq	%r11, %rsp
-	jne	.LPSRL0
-	subq	$1072, %rsp
-	movl	%edi, -197668(%rbp)
-	movq	%rsi, -197680(%rbp)
+	subq	$1040, %rsp
+	movl	%edi, -1028(%rbp)
+	movq	%rsi, -1040(%rbp)
 	movq	%fs:40, %rax
 	movq	%rax, -8(%rbp)
 	xorl	%eax, %eax
-	movl	$0, -197660(%rbp)
-	cmpl	$3, -197668(%rbp)
-	jg	.L5
-	movl	$0, %eax
-	jmp	.L6
-.L5:
-	cmpl	$4, -197668(%rbp)
-	jg	.L7
 	call	getpid@PLT
 	movl	%eax, %edx
 	leaq	-1008(%rbp), %rax
@@ -107,123 +88,41 @@ main:
 	call	system@PLT
 	movl	$30, %edi
 	call	sleep@PLT
-.L7:
-	cmpl	$6, -197668(%rbp)
-	jne	.L8
-	movl	$1, -197660(%rbp)
-.L8:
-	leaq	-66544(%rbp), %rdi
-	leaq	-132080(%rbp), %rsi
-	leaq	-197616(%rbp), %rcx
-	leaq	-197648(%rbp), %rdx
-	leaq	-197656(%rbp), %rax
-	movq	%rdi, %r9
-	movq	%rsi, %r8
-	movq	%rax, %rsi
-	leaq	.LC1(%rip), %rdi
-	movl	$0, %eax
-	call	printf@PLT
-	leaq	.LC2(%rip), %rdi
-	call	system@PLT
-	cmpl	$0, -197660(%rbp)
-	je	.L9
-#APP
-# 47 "test.c" 1
-	nop
-# 0 "" 2
-#NO_APP
-.L9:
-	leaq	-66544(%rbp), %rdx
-	leaq	-132080(%rbp), %rcx
-	leaq	-197616(%rbp), %rax
-	movq	%rcx, %rsi
-	movq	%rax, %rdi
+	leaq	j_3(%rip), %rdx
+	leaq	j_2(%rip), %rsi
+	leaq	j_1(%rip), %rdi
 	call	init_test
-	cmpl	$0, -197660(%rbp)
-	je	.L10
-#APP
-# 51 "test.c" 1
-	nop
-# 0 "" 2
-#NO_APP
-.L10:
-	movq	$0, -197656(%rbp)
-	jmp	.L11
-.L12:
-	movq	-197656(%rbp), %rax
-	movq	-66544(%rbp,%rax,8), %rdx
-	movq	-197656(%rbp), %rax
-	movq	-197616(%rbp,%rax,8), %rcx
-	movq	-197656(%rbp), %rax
-	movq	-132080(%rbp,%rax,8), %rax
-	addq	%rax, %rcx
-	movq	-197656(%rbp), %rax
-	addq	%rcx, %rdx
-	movq	%rdx, -66544(%rbp,%rax,8)
-	movq	-197656(%rbp), %rax
-	addq	$1, %rax
-	movq	%rax, -197656(%rbp)
-.L11:
-	movq	-197656(%rbp), %rax
-	cmpq	$8191, %rax
-	jbe	.L12
-	cmpl	$0, -197660(%rbp)
-	je	.L13
-#APP
-# 56 "test.c" 1
-	nop
-# 0 "" 2
-#NO_APP
-.L13:
-	movq	-197680(%rbp), %rax
-	addq	$8, %rax
-	movq	(%rax), %rax
-	movq	%rax, %rdi
-	call	atoi@PLT
-	cltq
-	movq	%rax, -197640(%rbp)
-	movq	-197680(%rbp), %rax
-	addq	$16, %rax
-	movq	(%rax), %rax
-	movq	%rax, %rdi
-	call	atoi@PLT
-	cltq
-	movq	%rax, -197632(%rbp)
-	movq	-197680(%rbp), %rax
-	addq	$24, %rax
-	movq	(%rax), %rax
-	movq	%rax, %rdi
-	call	atoi@PLT
-	cltq
-	movq	%rax, -197624(%rbp)
-	movq	-197624(%rbp), %rax
-	movq	-66544(%rbp,%rax,8), %rdi
-	movq	-197632(%rbp), %rax
-	movq	-132080(%rbp,%rax,8), %rsi
-	movq	-197640(%rbp), %rax
-	movq	-197616(%rbp,%rax,8), %r8
-	movq	-197648(%rbp), %rdx
-	movq	-197656(%rbp), %rax
-	movq	-197632(%rbp), %r9
-	movq	-197640(%rbp), %rcx
-	subq	$8, %rsp
-	pushq	%rdi
-	pushq	-197624(%rbp)
-	pushq	%rsi
-	movq	%rax, %rsi
-	leaq	.LC3(%rip), %rdi
-	movl	$0, %eax
-	call	printf@PLT
-	addq	$32, %rsp
-	leaq	.LC2(%rip), %rdi
-	call	system@PLT
-	movl	$0, %eax
+	movq	$0, -1016(%rbp)
+	jmp	.L5
 .L6:
+	movq	-1016(%rbp), %rax
+	leaq	0(,%rax,8), %rdx
+	leaq	j_3(%rip), %rax
+	movq	(%rdx,%rax), %rax
+	movq	-1016(%rbp), %rdx
+	leaq	0(,%rdx,8), %rcx
+	leaq	j_1(%rip), %rdx
+	movq	(%rcx,%rdx), %rcx
+	movq	-1016(%rbp), %rdx
+	leaq	0(,%rdx,8), %rsi
+	leaq	j_2(%rip), %rdx
+	movq	(%rsi,%rdx), %rdx
+	addq	%rcx, %rdx
+	leaq	(%rax,%rdx), %rcx
+	movq	-1016(%rbp), %rax
+	leaq	0(,%rax,8), %rdx
+	leaq	j_3(%rip), %rax
+	movq	%rcx, (%rdx,%rax)
+	addq	$1, -1016(%rbp)
+.L5:
+	cmpq	$8191, -1016(%rbp)
+	jbe	.L6
+	movl	$0, %eax
 	movq	-8(%rbp), %rsi
 	xorq	%fs:40, %rsi
-	je	.L14
+	je	.L8
 	call	__stack_chk_fail@PLT
-.L14:
+.L8:
 	leave
 	.cfi_def_cfa 7, 8
 	ret
