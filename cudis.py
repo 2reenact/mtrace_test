@@ -9,11 +9,20 @@ def getAddrIdx(data, arr):
 			return arr.index(i)
 	return -1
 
+def incRefAddr(addr, arr, entry):
+	arrlen = len(arr)
+	i = int(arrlen / 2)
+	while arr[i][0] != addr:
+		
+
 def worker(wid, arr, count, res):
 	start = int(wid * count)
 	offset = 0
 	while offset < count:
 		entry = arr[start + offset].split(" ")
+		offset += 1
+		if opc >= 0 and entry[0] != opc:
+			continue
 		hexaddr = entry[1]
 		addr = int(hexaddr, base=16)
 		i = getAddrIdx(hexaddr, res)
@@ -21,7 +30,6 @@ def worker(wid, arr, count, res):
 			res[i][1] += 1
 		else:
 			res.append([hexaddr, addr, 1])
-		offset += 1
 
 def convert_bytes(size):
 	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
@@ -29,9 +37,30 @@ def convert_bytes(size):
 			return "%3.1f %s" % (size, x)
 		size /= 1024.0
 
+def str2size(sizestr):
+	batch = 1
+	strlen = len(sizestr)
+	lastchar = sizestr[strlen-1]
+
+	if lastchar == 'K' or lastchar == "k":
+		batch = 1024
+	elif lastchar == 'M' or lastchar == "m":
+		batch = 1024 * 1024
+	elif lastchar == 'G' or lastchar == "g":
+		batch = 1024 * 1024 * 1024
+
+	if strlen == 2:
+		batch = int(sizestr[0]) * batch
+	else:
+		batch = int(sizestr[0:strlen-2]) * batch
+
+	return batch
+		
+
 if __name__ =="__main__":
 	nworkers = 1
 	batch = 800000
+	opc = -1
 
 	if len(sys.argv) < 3:
 		print("Too few arguments")
@@ -39,24 +68,10 @@ if __name__ =="__main__":
 		nworkers = int(sys.argv[3])
 		batch = int(batch / nworkers) * nworkers
 	if len(sys.argv) > 4:
-		strlen = len(sys.argv[4])
-		lastchar = sys.argv[4][strlen-1]
-		lastchars = sys.argv[4][strlen-2:strlen-1]
-		if lastchar == 'K' or lastchar == "k":
-			batch = int(sys.argv[4][0:strlen-2]) * 1024
-		elif lastchars == 'KB' or lastchars == 'kb':
-			batch = int(sys.argv[4][0:strlen-3]) * 1024
-		elif lastchar == 'M' or lastchar == "m":
-			batch = int(sys.argv[4][0:strlen-2]) * 1024 * 1024
-		elif lastchars == 'MB' or lastchars == 'mb':
-			batch = int(sys.argv[4][0:strlen-3]) * 1024 * 1024
-		elif lastchar == 'G' or lastchar == "g":
-			batch = int(sys.argv[4][0:strlen-2]) * 1024 * 1024 * 1024
-		elif lastchars == 'GB' or lastchars == 'gb':
-			batch = int(sys.argv[4][0:strlen-3]) * 1024 * 1024 * 1024
-		else:
-			batch = int(sys.argv[4])
+		batch = str2size(sys.argv[4]
 		batch = int(batch / nworkers) * nworkers
+	if len(sys.argv) > 5:
+		opc = int(sys.argv[5])
 
 	filesize = os.path.getsize(sys.argv[1])
 	numbatch = int(filesize / batch)
