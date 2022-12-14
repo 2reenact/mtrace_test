@@ -84,6 +84,14 @@ if __name__ =="__main__":
 	print("\tOutput Filename: " + sys.argv[2])
 	print("\tNum of Workers: " + str(nworkers))
 	print("\tBatch Size: " + convert_bytes(batch))
+	if opc == 0:
+		print("\tCumulate Reads")
+	elif opc == 1:
+		print("\tCumulate Writes")
+	elif opc == 2:
+		print("\tCumulate Instructions")
+	else:
+		print("\tCumulate Write Trace")
 	print()
 	print("\tFilesize: " + filesize)
 	print("\tNum of Batches: " + str(numbatch))
