@@ -10,14 +10,33 @@ def find(data, arr):
 print(sys.argv)
 dis = list()
 
-df = pd.read_csv(sys.argv[1], sep=' ', names=['idx', 'paddr', 'vaddr']);
+print("Open the target file")
+filein = open(sys.argv[1], "r")
 
-for i in df['paddr']:
-	idx = find(i, dis)
+print("Run")
+linein = filein.readline()
+while linein:
+	entry = linein.split(" ")
+	addr = int(entry[1], base=16)
+
+	idx = find(addr, dis)
+	if idx > -1:
+		dis[idx][1] += 1
+	else:
+		dis.append([addr, 1])
+
+	linein = filein.readline()
+filein.close()
+
+'''
+for addr in df['paddr']:
+	idx = find(addr, dis)
 	if idx > -1:
 		dis[idx][1] += 1
 	else:
 		dis.append([i, 1])
+'''
 
+print("Done")
 df = pd.DataFrame(dis)
 df.to_csv(sys.argv[2], sep=',')
