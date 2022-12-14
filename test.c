@@ -8,6 +8,7 @@ unsigned long j_1[S_SIZE];
 unsigned long j_2[S_SIZE];
 unsigned long j_3[S_SIZE];
 
+#if 0
 int init_test(unsigned long *j_1, unsigned long *j_2, unsigned long *j_3){
 	int i;
 
@@ -17,9 +18,10 @@ int init_test(unsigned long *j_1, unsigned long *j_2, unsigned long *j_3){
 		j_3[i] = i;
 	}
 }
+#endif
 
 int main(int argc, char *argv[]){
-	unsigned long i;
+	unsigned long i, j;
 	char buff[1000];
 
 	sprintf(buff, "pmap -X %d", getpid());
@@ -27,9 +29,24 @@ int main(int argc, char *argv[]){
 
 	sleep(30);
 
-	init_test(j_1, j_2, j_3);
-
-	for(i = 0x0; i<S_SIZE; i++){
-		j_3[i] += j_1[i]+j_2[i];
+	for(i = 0x0; i<S_SIZE; i++) {
+		for(j = 0x0; j < S_SIZE; j++) {
+			j_1[j] = i;
+			j_2[j] = i;
+			j_3[j] = i;
+		}
+	}
+	
+	for(i = 0x0; i<S_SIZE; i++) {
+		for(j = 0x0; j < S_SIZE; j++) {
+			j_1[j] = i;
+			j_2[j] = i;
+		}
+	}
+	
+	for(i = 0x0; i<S_SIZE; i++) {
+		for(j = 0x0; j < S_SIZE; j++) {
+			j_1[j] = i;
+		}
 	}
 }
