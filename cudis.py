@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import threading
+import os.path
 
 def getAddrIdx(data, arr):
 	for i in arr:
@@ -22,6 +23,12 @@ def worker(wid, arr, count, res):
 			res.append([hexaddr, addr, 1])
 		offset += 1
 
+def convert_bytes(size):
+	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+		if size < 1024.0:
+			return "%3.1f %s" % (size, x)
+		size /= 1024.0
+
 if __name__ =="__main__":
 	nworkers = 1
 	batch = 800000
@@ -32,16 +39,39 @@ if __name__ =="__main__":
 		nworkers = int(sys.argv[3])
 		batch = int(batch / nworkers) * nworkers
 	if len(sys.argv) > 4:
-		batch = int(sys.argv[4])
+		strlen = len(sys.argv[4])
+		lastchar = sys.argv[4][strlen-1]
+		lastchars = sys.argv[4][strlen-2:strlen-1]
+		if lastchar == 'K' or lastchar == "k":
+			batch = int(sys.argv[4][0:strlen-2]) * 1024
+		elif lastchars == 'KB' or lastchars == 'kb':
+			batch = int(sys.argv[4][0:strlen-3]) * 1024
+		elif lastchar == 'M' or lastchar == "m":
+			batch = int(sys.argv[4][0:strlen-2]) * 1024 * 1024
+		elif lastchars == 'MB' or lastchars == 'mb':
+			batch = int(sys.argv[4][0:strlen-3]) * 1024 * 1024
+		elif lastchar == 'G' or lastchar == "g":
+			batch = int(sys.argv[4][0:strlen-2]) * 1024 * 1024 * 1024
+		elif lastchars == 'GB' or lastchars == 'gb':
+			batch = int(sys.argv[4][0:strlen-3]) * 1024 * 1024 * 1024
+		else:
+			batch = int(sys.argv[4])
 		batch = int(batch / nworkers) * nworkers
+
+	filesize = os.path.getsize(sys.argv[1])
+	numbatch = int(filesize / batch)
+	filesize = convert_bytes(filesize)
 
 	print("*******************************************")
 	print("                  CUDIS")
 	print()
 	print("\tInput Filename: " + sys.argv[1])
 	print("\tOutput Filename: " + sys.argv[2])
-	print("\tNum of Worker: " + str(nworkers))
-	print("\tBatch Size: " + str(batch))
+	print("\tNum of Workers: " + str(nworkers))
+	print("\tBatch Size: " + convert_bytes(batch))
+	print()
+	print("\tFilesize: " + filesize)
+	print("\tNum of Batches: " + str(numbatch))
 	print()
 
 	result = list()
