@@ -24,7 +24,7 @@ def worker(wid, arr, count, res):
 
 if __name__ =="__main__":
 	nworkers = 1
-	batch = 40000
+	batch = 800000
 
 	if len(sys.argv) < 3:
 		print("Too few arguments")
