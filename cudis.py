@@ -9,11 +9,12 @@ def getAddrIdx(data, arr):
 			return arr.index(i)
 	return -1
 
+'''
 def incRefAddr(addr, arr, entry):
 	arrlen = len(arr)
 	i = int(arrlen / 2)
 	while arr[i][0] != addr:
-		
+'''		
 
 def worker(wid, arr, count, res):
 	start = int(wid * count)
@@ -34,7 +35,7 @@ def worker(wid, arr, count, res):
 def convert_bytes(size):
 	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
 		if size < 1024.0:
-			return "%3.1f %s" % (size, x)
+			return "%d %s" % (int(size), x)
 		size /= 1024.0
 
 def str2size(sizestr):
@@ -52,7 +53,7 @@ def str2size(sizestr):
 	if strlen == 2:
 		batch = int(sizestr[0]) * batch
 	else:
-		batch = int(sizestr[0:strlen-2]) * batch
+		batch = int(sizestr[0:strlen-1]) * batch
 
 	return batch
 		
@@ -68,7 +69,7 @@ if __name__ =="__main__":
 		nworkers = int(sys.argv[3])
 		batch = int(batch / nworkers) * nworkers
 	if len(sys.argv) > 4:
-		batch = str2size(sys.argv[4]
+		batch = str2size(sys.argv[4])
 		batch = int(batch / nworkers) * nworkers
 	if len(sys.argv) > 5:
 		opc = int(sys.argv[5])
@@ -77,8 +78,8 @@ if __name__ =="__main__":
 	numbatch = int(filesize / batch)
 	filesize = convert_bytes(filesize)
 
-	print("*******************************************")
-	print("                  CUDIS")
+	print("****************************************")
+	print("                CUDIS")
 	print()
 	print("\tInput Filename: " + sys.argv[1])
 	print("\tOutput Filename: " + sys.argv[2])
@@ -107,13 +108,15 @@ if __name__ =="__main__":
 	for i in range(nworkers):
 		reslist.append([])
 
+	print("[", end="", flush=True)
 	loop = 1
 	linein1 = filein.readlines(batch)
 	linein2 = []
 	while len(linein1) != 0 or len(linein2) != 0:
+		if loop % int(numbatch / 38) == 0:
+			print("*", end="", flush=True)
 		w = list()
 		if len(linein1) != 0:
-			print("\tLoop" + str(loop) + ": " + str(len(linein1)) + " lines start...")
 			batchlen = len(linein1)
 			for i in range(nworkers):
 				w.append(threading.Thread(target=worker, args=(i, linein1, batchlen/nworkers, reslist[i],)))
@@ -124,7 +127,6 @@ if __name__ =="__main__":
 				w[i].join()
 			linein1 = []
 		else:
-			print("\tLoop" + str(loop) + ": " + str(len(linein2)) + " lines start...")
 			batchlen = len(linein2)
 			for i in range(nworkers):
 				w.append(threading.Thread(target=worker, args=(i, linein2, batchlen/nworkers, reslist[i],)))
@@ -135,12 +137,14 @@ if __name__ =="__main__":
 				w[i].join()
 			linein2 = []
 		loop += 1
+	print("]")
 	filein.close()
 
 	print()
 	print(" Reduce...")
+	print("[*", end="", flush=True)
 	for i in range(nworkers):
-		print("\tWorker" + str(i + 1) +"...")
+		print("**", end="", flush=True)
 		for entry in reslist[i]:
 			hexaddr = entry[0]
 			refcnt = entry[2]
@@ -149,6 +153,7 @@ if __name__ =="__main__":
 				result[i][2] += refcnt
 			else:
 				result.append(entry)
+	print("*]", end="", flush=True)
 	
 	print()
 	print(" Write Output File: " + sys.argv[2] + "...")
@@ -158,5 +163,5 @@ if __name__ =="__main__":
 	df.to_csv(sys.argv[2], sep=',')
 	print(" Done")
 	print()
-	print("*******************************************")
+	print("****************************************")
 
