@@ -2,6 +2,15 @@ import sys
 import pandas as pd
 import threading
 import os.path
+import math
+
+def printProgressBar (iteration, total):
+    percent = ("{0:.1f}").format(100 * (iteration / float(total)))
+    filledLength = int(35 * iteration // total)
+    bar = '*' * filledLength + ' ' * (35 - filledLength)
+    print(f'\r [{bar}] {percent}%', end = "\r")
+    if iteration == total: 
+        print()
 
 def getAddrIdx(data, arr):
 	for i in arr:
@@ -9,16 +18,8 @@ def getAddrIdx(data, arr):
 			return arr.index(i)
 	return -1
 
-'''
-def incRefAddr(addr, arr, entry):
-	arrlen = len(arr)
-	i = int(arrlen / 2)
-	while arr[i][0] != addr:
-'''		
-
 def worker(wid, arr, offset, count, res):
 	i = 0
-#print("\t" + str(wid) + ": " + str(offset) + ", " + str(offset + count - 1))
 	while i < count:
 		entry = arr[offset + i].split(" ")
 		if opc >= 0 and entry[0] != opc:
@@ -78,7 +79,7 @@ if __name__ =="__main__":
 		opc = int(sys.argv[5])
 
 	filesize = os.path.getsize(sys.argv[1])
-	numbatch = int(filesize / batch)
+	numbatch = int(math.ceil(filesize / batch))
 	filesize = convert_bytes(filesize)
 
 	print("***************************************")
@@ -104,27 +105,17 @@ if __name__ =="__main__":
 	result = list()
 	reslist = list()
 		
-	print(" Open Target File: " + sys.argv[1])
 	filein = open(sys.argv[1], "r")
 
 	print(" Map...")
 	for i in range(nworkers):
 		reslist.append([])
 
-	print("[", end="", flush=True)
 	loop = 1
 	linein1 = filein.readlines(batch)
 	linein2 = []
-	'''
-	'''
-	lines = 0
 	while len(linein1) != 0 or len(linein2) != 0:
-		if numbatch >= 36:
-			if loop % int(numbatch / 36) == 0:
-				print("*", end="", flush=True)
-		else:
-			for i in range(int(36 / numbatch)):
-				print("*", end="", flush=True)
+		printProgressBar(loop, numbatch)
 
 		w = []
 		if len(linein1) != 0:
@@ -162,15 +153,12 @@ if __name__ =="__main__":
 			linein2 = []
 
 		loop += 1
-	print("]")
 	filein.close()
 
 	print()
 	print(" Reduce...")
-	print("[**", end="", flush=True)
 	for i in range(nworkers):
-		for j in range(int(16/nworkers)):
-			print("**", end="", flush=True)
+		printProgressBar(i + 1, nworkers)
 		for entry in reslist[i]:
 			hexaddr = entry[0]
 			refcnt = entry[2]
@@ -179,14 +167,12 @@ if __name__ =="__main__":
 				result[i][2] += refcnt
 			else:
 				result.append(entry)
-	print("**]", end="", flush=True)
 
 	print()
-	print(" Write Output File: " + sys.argv[2] + "...")
-	print("\tConvert to DataFrame...")
+	print(" Writing out File: " + sys.argv[2] + "...")
 	df = pd.DataFrame(result)
-	print("\tWrite")
 	df.to_csv(sys.argv[2], sep=',')
+	print()
 	print(" Done")
 	print()
 	print("***************************************")
