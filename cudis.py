@@ -22,7 +22,7 @@ def worker(wid, arr, offset, count, res):
 	i = 0
 	while i < count:
 		entry = arr[offset + i].split(" ")
-		if opc >= 0 and entry[0] != opc:
+		if opc >= 0 and int(entry[0]) != opc:
 			i += 1
 			continue
 		hexaddr = entry[1]
