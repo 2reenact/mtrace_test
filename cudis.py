@@ -34,10 +34,10 @@ def worker(wid, arr, offset, count, res):
 			res.append([hexaddr, addr, 1])
 		i += 1
 
-def convert_bytes(size):
+def convBytes(size):
 	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
 		if size < 1024.0:
-			return "%d %s" % (int(size), x)
+			return "%.1f %s" % (size, x)
 		size /= 1024.0
 
 def str2size(sizestr):
@@ -80,7 +80,7 @@ if __name__ =="__main__":
 
 	filesize = os.path.getsize(sys.argv[1])
 	numbatch = int(math.ceil(filesize / batch))
-	filesize = convert_bytes(filesize)
+	filesize = convBytes(filesize)
 
 	print("***************************************")
 	print("                CUDIS")
@@ -88,7 +88,7 @@ if __name__ =="__main__":
 	print("\tInput Filename: " + sys.argv[1])
 	print("\tOutput Filename: " + sys.argv[2])
 	print("\tNum of Workers: " + str(nworkers))
-	print("\tBatch Size: " + convert_bytes(batch))
+	print("\tBatch Size: " + convBytes(batch))
 	if opc == 0:
 		print("\tCumulate Reads")
 	elif opc == 1:
@@ -111,11 +111,12 @@ if __name__ =="__main__":
 	for i in range(nworkers):
 		reslist.append([])
 
-	loop = 1
+	loop = 2
 	linein1 = filein.readlines(batch)
 	linein2 = []
 	while len(linein1) != 0 or len(linein2) != 0:
-		printProgressBar(loop, numbatch)
+		if loop <= numbatch:
+			printProgressBar(loop, numbatch)
 
 		w = []
 		if len(linein1) != 0:
@@ -173,7 +174,6 @@ if __name__ =="__main__":
 	df = pd.DataFrame(result)
 	df.to_csv(sys.argv[2], sep=',')
 	print()
-	print(" Done")
-	print()
 	print("***************************************")
+	print()
 
