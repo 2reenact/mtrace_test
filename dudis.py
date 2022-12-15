@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import threading
 import os.path
+import math
 
 def getAddrIdx(data, arr):
 	for i in arr:
@@ -9,16 +10,8 @@ def getAddrIdx(data, arr):
 			return arr.index(i)
 	return -1
 
-'''
-def incRefAddr(addr, arr, entry):
-	arrlen = len(arr)
-	i = int(arrlen / 2)
-	while arr[i][0] != addr:
-'''		
-
 def worker(wid, arr, offset, count, res):
 	i = 0
-#print("\t" + str(wid) + ": " + str(offset) + ", " + str(offset + count - 1))
 	while i < count:
 		entry = arr[offset + i].split(" ")
 		if opc >= 0 and entry[0] != opc:
@@ -78,9 +71,10 @@ if __name__ =="__main__":
 		opc = int(sys.argv[5])
 
 	filesize = os.path.getsize(sys.argv[1])
-	numbatch = int(filesize / batch)
+	numbatch = int(math.ceil(filesize / batch))
 	filesize = convert_bytes(filesize)
 
+	print()
 	print("***************************************")
 	print("                CUDIS")
 	print()
@@ -100,38 +94,30 @@ if __name__ =="__main__":
 	print("\tFilesize: " + filesize)
 	print("\tNum of Batches: " + str(numbatch))
 	print()
+	print("***************************************")
 
 	result = list()
 	reslist = list()
 		
-	print(" Open Target File: " + sys.argv[1])
 	filein = open(sys.argv[1], "r")
 
+	print()
 	print(" Map...")
 	for i in range(nworkers):
 		reslist.append([])
 
-	print("[", end="", flush=True)
 	loop = 1
 	linein1 = filein.readlines(batch)
 	linein2 = []
-	'''
-	'''
-	lines = 0
 	while len(linein1) != 0 or len(linein2) != 0:
-		if numbatch >= 36:
-			if loop % int(numbatch / 36) == 0:
-				print("*", end="", flush=True)
-		else:
-			for i in range(int(36 / numbatch)):
-				print("*", end="", flush=True)
-
 		w = []
+
 		if len(linein1) != 0:
 			batchlen = len(linein1)
 			rest = batchlen % nworkers
 			batchlen = int(batchlen / nworkers)
 			minibatch = batchlen
+			print("(" + str(loop) + "/" + str(numbatch) + ") " + str(len(linein1)) + " lines, " + str(minibatch))
 
 			for i in range(nworkers):
 				if i == nworkers - 1:
@@ -149,6 +135,7 @@ if __name__ =="__main__":
 			rest = batchlen % nworkers
 			batchlen = int(batchlen / nworkers)
 			minibatch = batchlen
+			print("(" + str(loop) + "/" + str(numbatch) + ") " + str(len(linein2)) + " lines, " + str(minibatch))
 
 			for i in range(nworkers):
 				if i == nworkers - 1:
@@ -162,32 +149,26 @@ if __name__ =="__main__":
 			linein2 = []
 
 		loop += 1
-	print("]")
 	filein.close()
 
 	print()
 	print(" Reduce...")
-	print("[**", end="", flush=True)
 	for i in range(nworkers):
-		for j in range(int(16/nworkers)):
-			print("**", end="", flush=True)
 		for entry in reslist[i]:
 			hexaddr = entry[0]
 			refcnt = entry[2]
-			i = getAddrIdx(hexaddr, result)
-			if i > -1:
-				result[i][2] += refcnt
+			idx = getAddrIdx(hexaddr, result)
+			if idx > -1:
+				result[idx][2] += refcnt
 			else:
 				result.append(entry)
-	print("**]", end="", flush=True)
+		print("(" + str(i + 1) + "/" + str(nworkers) + ") " + str(len(reslist[i])) + " entries, " + str(len(result)) + " total.")
 
 	print()
-	print(" Write Output File: " + sys.argv[2] + "...")
-	print("\tConvert to DataFrame...")
+	print(" Writing out file: " + sys.argv[2] + "...")
 	df = pd.DataFrame(result)
-	print("\tWrite")
 	df.to_csv(sys.argv[2], sep=',')
+	print()
 	print(" Done")
 	print()
-	print("***************************************")
 
