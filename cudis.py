@@ -21,16 +21,17 @@ def worker(wid, arr, count, res):
 	offset = 0
 	while offset < count:
 		entry = arr[start + offset].split(" ")
-		offset += 1
 		if opc >= 0 and entry[0] != opc:
+			offset += 1
 			continue
 		hexaddr = entry[1]
 		addr = int(hexaddr, base=16)
 		i = getAddrIdx(hexaddr, res)
 		if i > -1:
-			res[i][1] += 1
+			res[i][2] += 1
 		else:
 			res.append([hexaddr, addr, 1])
+		offset += 1
 
 def convert_bytes(size):
 	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
@@ -49,6 +50,8 @@ def str2size(sizestr):
 		batch = 1024 * 1024
 	elif lastchar == 'G' or lastchar == "g":
 		batch = 1024 * 1024 * 1024
+	else:
+		return int(sizestr)
 
 	if strlen == 2:
 		batch = int(sizestr[0]) * batch
@@ -142,7 +145,7 @@ if __name__ =="__main__":
 
 	print()
 	print(" Reduce...")
-	print("[*", end="", flush=True)
+	print("[**", end="", flush=True)
 	for i in range(nworkers):
 		print("**", end="", flush=True)
 		for entry in reslist[i]:
@@ -153,7 +156,7 @@ if __name__ =="__main__":
 				result[i][2] += refcnt
 			else:
 				result.append(entry)
-	print("*]", end="", flush=True)
+	print("**]", end="", flush=True)
 	
 	print()
 	print(" Write Output File: " + sys.argv[2] + "...")
