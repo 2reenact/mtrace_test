@@ -152,7 +152,7 @@ if __name__ =="__main__":
 	rdict = dict()
 	for i in range(nworkers):
 		printProgressBar(i + 1, nworkers)
-		rdict += dlist[i]
+		rdict + dlist[i]
 
 	result = list()	
 	for key in rdict.keys():
