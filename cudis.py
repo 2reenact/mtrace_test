@@ -26,12 +26,17 @@ def worker(wid, arr, offset, count, res):
 			i += 1
 			continue
 		hexaddr = entry[1]
-		addr = int(hexaddr, base=16)
+		if res[hexaddr] == None:
+			res[hexaddr] = 1
+		else:
+			res[hexaddr] += 1
+	'''
 		idx = getAddrIdx(hexaddr, res)
 		if idx > -1:
 			res[idx][2] = int(res[idx][2]) + 1
 		else:
 			res.append([hexaddr, addr, 1])
+	'''
 		i += 1
 
 def convBytes(size):
@@ -102,14 +107,13 @@ if __name__ =="__main__":
 	print("\tNum of Batches: " + str(numbatch))
 	print()
 
-	result = list()
-	reslist = list()
+	dlist = list()
 		
 	filein = open(sys.argv[1], "r")
 
 	print(" Map...")
 	for i in range(nworkers):
-		reslist.append([])
+		dlist.append(dict())
 
 	loop = 2
 	linein1 = filein.readlines(batch)
@@ -128,7 +132,7 @@ if __name__ =="__main__":
 			for i in range(nworkers):
 				if i == nworkers - 1:
 					minibatch += rest
-				w.append(threading.Thread(target=worker, args=(i, linein1, i * batchlen,  minibatch, reslist[i],)))
+				w.append(threading.Thread(target=worker, args=(i, linein1, i * batchlen,  minibatch, dlist[i],)))
 			for i in range(nworkers):
 				w[i].start()
 			linein2 = filein.readlines(batch)
@@ -145,7 +149,7 @@ if __name__ =="__main__":
 			for i in range(nworkers):
 				if i == nworkers - 1:
 					minibatch += rest
-				w.append(threading.Thread(target=worker, args=(i, linein2, i * batchlen,  minibatch, reslist[i],)))
+				w.append(threading.Thread(target=worker, args=(i, linein2, i * batchlen,  minibatch, dlist[i],)))
 			for i in range(nworkers):
 				w[i].start()
 			linein1 = filein.readlines(batch)
@@ -158,16 +162,14 @@ if __name__ =="__main__":
 
 	print()
 	print(" Reduce...")
+	rdict = dict()
 	for i in range(nworkers):
 		printProgressBar(i + 1, nworkers)
-		for entry in reslist[i]:
-			hexaddr = entry[0]
-			refcnt = entry[2]
-			i = getAddrIdx(hexaddr, result)
-			if i > -1:
-				result[i][2] += refcnt
-			else:
-				result.append(entry)
+		rdict += dlist[i]:
+
+	result = list()	
+	for key in rdict.keys():
+		result.append([key, int(key, base=16), rdict[key])
 
 	print()
 	print(" Writing out File: " + sys.argv[2] + "...")
