@@ -12,12 +12,6 @@ def printProgressBar (iteration, total):
     if iteration == total: 
         print()
 
-def getAddrIdx(data, arr):
-	for i in arr:
-		if i[0] == data:
-			return arr.index(i)
-	return -1
-
 def worker(wid, arr, offset, count, res):
 	i = 0
 	while i < count:
@@ -25,18 +19,11 @@ def worker(wid, arr, offset, count, res):
 		if opc >= 0 and int(entry[0]) != opc:
 			i += 1
 			continue
-		hexaddr = entry[1]
-		if res[hexaddr] == None:
-			res[hexaddr] = 1
-		else:
+		hexaddr = entry[1][0:len(entry[1])-1]
+		if hexaddr in res:
 			res[hexaddr] += 1
-	'''
-		idx = getAddrIdx(hexaddr, res)
-		if idx > -1:
-			res[idx][2] = int(res[idx][2]) + 1
 		else:
-			res.append([hexaddr, addr, 1])
-	'''
+			res[hexaddr] = 1
 		i += 1
 
 def convBytes(size):
@@ -165,11 +152,11 @@ if __name__ =="__main__":
 	rdict = dict()
 	for i in range(nworkers):
 		printProgressBar(i + 1, nworkers)
-		rdict += dlist[i]:
+		rdict += dlist[i]
 
 	result = list()	
 	for key in rdict.keys():
-		result.append([key, int(key, base=16), rdict[key])
+		result.append([key, int(key, base=16), rdict[key]])
 
 	print()
 	print(" Writing out File: " + sys.argv[2] + "...")
