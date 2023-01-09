@@ -19,7 +19,7 @@ def worker(wid, arr, offset, count, res):
 		if opc >= 0 and int(entry[0]) != opc:
 			i += 1
 			continue
-		hexaddr = entry[1][0:len(entry[1])-1]
+		hexaddr = entry[1][0:(len(entry[1])-1)]
 		if hexaddr in res:
 			res[hexaddr] += 1
 		else:
@@ -152,14 +152,19 @@ if __name__ =="__main__":
 	rdict = dict()
 	for i in range(nworkers):
 		printProgressBar(i + 1, nworkers)
-		rdict + dlist[i]
-
-	result = list()	
-	for key in rdict.keys():
-		result.append([key, int(key, base=16), rdict[key]])
+		rdict.update(dlist[i])
 
 	print()
-	print(" Writing out File: " + sys.argv[2] + "...")
+	print(" Writing out File: " + sys.argv[2])
+
+	result = list()	
+	cnt = 0
+	total_keys = len(rdict)
+	for key in rdict.keys():
+		printProgressBar(cnt, total_keys)
+		result.append([key, int(key, base=16), rdict[key]])
+		cnt += 1
+
 	df = pd.DataFrame(result)
 	df.to_csv(sys.argv[2], sep=',')
 	print()
